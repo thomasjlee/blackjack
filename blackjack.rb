@@ -38,9 +38,8 @@ class Deck
     @cards = generate_cards.shuffle!
   end
 
-  def deal_card
-    random = rand(@cards.size)
-    @cards.delete_at(random)
+  def draw!
+    @cards.shift
   end
 
   private
