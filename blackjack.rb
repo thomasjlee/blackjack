@@ -9,9 +9,14 @@ class Card
 end
 
 class Deck
-  attr_accessor :playable_cards
+  attr_reader :cards
 
-  SUITS = [:hearts, :diamonds, :spades, :clubs].freeze
+  SUITS = [
+    :hearts,
+    :diamonds,
+    :spades,
+    :clubs
+  ].freeze
 
   NAME_VALUES = {
     two:   2,
@@ -30,21 +35,26 @@ class Deck
   }.freeze
 
   def initialize
-    shuffle
+    @cards = generate_cards.shuffle!
   end
 
   def deal_card
-    random = rand(@playable_cards.size)
-    @playable_cards.delete_at(random)
+    random = rand(@cards.size)
+    @cards.delete_at(random)
   end
 
-  def shuffle
-    @playable_cards = []
+  private
+
+  def generate_cards
+    cards = []
+
     SUITS.each do |suite|
       NAME_VALUES.each do |name, value|
-        @playable_cards << Card.new(suite, name, value)
+        cards << Card.new(suite, name, value)
       end
     end
+
+    cards
   end
 end
 
