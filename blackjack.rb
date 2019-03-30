@@ -57,10 +57,39 @@ class Deck
   end
 end
 
-class Hand
-  attr_accessor :cards
+class Player
+  attr_reader :cards
 
   def initialize
     @cards = []
+  end
+
+  def deal(card)
+    @cards << card
+  end
+  alias hit deal
+
+  def blackjack?
+    possible_hands.include?(21)
+  end
+  alias twenty_one? blackjack?
+
+  def possible_hands
+    aces, non_aces = @cards.partition { |card| card.name == :ace }
+    hand_without_aces = non_aces.sum(&:value)
+
+    if aces.count
+      hands_with_aces(aces.count, hand_without_aces)
+    else
+      [hand_without_aces]
+    end
+  end
+
+  def hands_with_aces(num_aces, hand_without_aces)
+    hands = []
+    (0..num_aces).each do |i|
+      hands.unshift(hand_without_aces + num_aces + (i * 10))
+    end
+    hands
   end
 end

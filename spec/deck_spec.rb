@@ -18,7 +18,11 @@ RSpec.describe Deck do
 
   it 'has 4 suits per value' do
     Deck::NAME_VALUES.each do |name, value|
-      expect(@deck.cards.count { |card| card.name == name && card.value == value }).to be 4
+      expect(
+        @deck.cards.count do |card|
+          card.name == name && card.value == value
+        end
+      ).to be 4
     end
   end
 
