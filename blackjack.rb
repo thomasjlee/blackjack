@@ -80,7 +80,7 @@ class Player
 
   def possible_hands
     aces, non_aces = @cards.partition { |card| card.name == :ace }
-    if has_ace?
+    if ace?
       hands_with_aces(aces, non_aces)
     else
       [hand_without_aces(non_aces)]
@@ -101,7 +101,7 @@ class Player
     hands
   end
 
-  def has_ace?
+  def ace?
     @cards.any? { |card| card.name == :ace }
   end
 end

@@ -98,7 +98,7 @@ RSpec.describe Player do
         expect(@player.possible_hands).to contain_exactly 4, 14, 24, 34, 44
       end
 
-      it 'gives the possible hands of an ace plus non-aces of arbitrary value' do
+      it 'gives possible hands of an ace and non-aces of arbitrary value' do
         (2..25).each do |val|
           @player.cards.clear
           @player.deal(ace)
@@ -110,7 +110,7 @@ RSpec.describe Player do
         end
       end
 
-      it 'gives the possible hands of two aces plus non-aces of arbitrary value' do
+      it 'gives possible hands of two aces and non-aces of arbitrary value' do
         (2..25).each do |val|
           @player.cards.clear
           @player.deal(ace)
@@ -123,7 +123,7 @@ RSpec.describe Player do
         end
       end
 
-      it 'gives the possible hands of three aces plus non-aces of arbitrary value' do
+      it 'gives possible hands of three aces and non-aces of arbitrary value' do
         (2..25).each do |val|
           @player.cards.clear
           @player.deal(ace)
@@ -137,7 +137,7 @@ RSpec.describe Player do
         end
       end
 
-      it 'gives the possible hands of four aces plus non-aces of arbitrary value' do
+      it 'gives possible hands of four aces and non-aces of arbitrary value' do
         (2..25).each do |val|
           @player.cards.clear
           @player.deal(ace)
