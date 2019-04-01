@@ -20,7 +20,7 @@ RSpec.describe Player do
     @player = Player.new
   end
 
-  describe '#deal' do
+  describe '#deal (alias: #hit)' do
     it 'deals a card' do
       @player.deal(double)
       expect(@player.cards.count).to be 1
@@ -29,115 +29,134 @@ RSpec.describe Player do
     it 'deals multiple cards' do
       @player.deal(double)
       @player.deal(double)
-      @player.hit(double)
-      expect(@player.cards.count).to be 3
-    end
-
-    it 'is aliased by #hit' do
-      @player.hit(double)
-      expect(@player.cards.count).to be 1
+      expect(@player.cards.count).to be 2
     end
   end
 
   describe '#possible_hands' do
     context 'without aces' do
-      it 'adds up two cards' do
-        @player.deal(two)
-        @player.deal(king)
-        expect(@player.possible_hands).to eq [12]
+      it 'gives the value of one card' do
+        non_aces = [
+          two,
+          three,
+          four,
+          five,
+          six,
+          seven,
+          eight,
+          nine,
+          ten,
+          jack,
+          queen,
+          king
+        ]
+        non_aces.each do |non_ace|
+          @player.cards.clear
+          @player.deal(non_ace)
+          expect(@player.possible_hands).to contain_exactly non_ace.value
+        end
       end
 
-      it 'adds up three cards' do
-        @player.deal(two)
-        @player.deal(four)
-        @player.hit(king)
-        expect(@player.possible_hands).to eq [16]
-      end
-
-      it 'adds up four cards' do
-        @player.deal(two)
-        @player.deal(four)
-        @player.hit(six)
-        @player.hit(king)
-        expect(@player.possible_hands).to eq [22]
-      end
-
-      it 'adds up five cards' do
-        @player.deal(two)
-        @player.deal(three)
-        @player.hit(seven)
-        @player.hit(queen)
-        @player.hit(king)
-        expect(@player.possible_hands).to eq [32]
-      end
-    end
-
-    context 'with one ace' do
-      it 'returns possible hands with two cards' do
-        @player.deal(ace)
-        @player.deal(two)
-        expect(@player.possible_hands).to eq [13, 3]
-      end
-
-      it 'returns possible hands with three cards' do
-        @player.deal(ace)
-        @player.deal(three)
-        @player.hit(five)
-        expect(@player.possible_hands).to eq [19, 9]
-      end
-
-      it 'returns possible hands with four cards' do
-        @player.deal(ace)
-        @player.deal(four)
-        @player.hit(six)
-        @player.hit(eight)
-        expect(@player.possible_hands).to eq [29, 19]
-      end
-
-      it 'returns possible hands with five cards' do
-        @player.deal(ace)
-        @player.deal(three)
-        @player.hit(five)
-        @player.hit(seven)
-        @player.hit(nine)
-        expect(@player.possible_hands).to eq [35, 25]
+      it 'adds the values of many cards' do
+        non_aces = [
+          two,
+          three,
+          four,
+          five,
+          six,
+          seven,
+          eight,
+          nine,
+          ten,
+          jack,
+          queen,
+          king
+        ]
+        non_aces.each { |non_ace| @player.deal(non_ace) }
+        expect(@player.possible_hands).to contain_exactly non_aces.sum(&:value)
       end
     end
 
-    context 'with two aces' do
-      it 'returns possible hands with two cards' do
+    context 'with aces' do
+      it 'gives the values of an ace' do
         @player.deal(ace)
-        @player.deal(ace)
-        expect(@player.possible_hands).to eq [22, 12, 2]
+        expect(@player.possible_hands).to contain_exactly 1, 11
       end
 
-      it 'returns possible hands with three cards' do
-        @player.deal(ace)
-        @player.deal(ace)
-        @player.hit(three)
-        expect(@player.possible_hands).to eq [25, 15, 5]
+      it 'gives the possible hands of two aces' do
+        2.times { @player.deal(ace) }
+        expect(@player.possible_hands).to contain_exactly 2, 12, 22
       end
 
-      it 'returns possible hands with four cards' do
-        @player.deal(ace)
-        @player.deal(ace)
-        @player.hit(six)
-        @player.hit(eight)
-        expect(@player.possible_hands).to eq [36, 26, 16]
+      it 'gives the possible hands of three aces' do
+        3.times { @player.deal(ace) }
+        expect(@player.possible_hands).to contain_exactly 3, 13, 23, 33
       end
 
-      it 'returns possible hands with five cards' do
-        @player.deal(ace)
-        @player.deal(ace)
-        @player.hit(five)
-        @player.hit(seven)
-        @player.hit(nine)
-        expect(@player.possible_hands).to eq [43, 33, 23]
+      it 'gives the possible hands of four aces' do
+        4.times { @player.deal(ace) }
+        expect(@player.possible_hands).to contain_exactly 4, 14, 24, 34, 44
+      end
+
+      it 'gives the possible hands of an ace plus non-aces of arbitrary value' do
+        (2..25).each do |val|
+          @player.cards.clear
+          @player.deal(ace)
+          @player.deal(double(val.to_s, name: :non_ace, value: val))
+
+          expect(
+            @player.possible_hands
+          ).to contain_exactly((1 + val), (11 + val))
+        end
+      end
+
+      it 'gives the possible hands of two aces plus non-aces of arbitrary value' do
+        (2..25).each do |val|
+          @player.cards.clear
+          @player.deal(ace)
+          @player.deal(ace)
+          @player.hit(double(val.to_s, name: :non_ace, value: val))
+
+          expect(
+            @player.possible_hands
+          ).to contain_exactly((2 + val), (12 + val), (22 + val))
+        end
+      end
+
+      it 'gives the possible hands of three aces plus non-aces of arbitrary value' do
+        (2..25).each do |val|
+          @player.cards.clear
+          @player.deal(ace)
+          @player.deal(ace)
+          @player.hit(ace)
+          @player.hit(double(val.to_s, name: :non_ace, value: val))
+
+          expect(
+            @player.possible_hands
+          ).to contain_exactly((3 + val), (13 + val), (23 + val), (33 + val))
+        end
+      end
+
+      it 'gives the possible hands of four aces plus non-aces of arbitrary value' do
+        (2..25).each do |val|
+          @player.cards.clear
+          @player.deal(ace)
+          @player.deal(ace)
+          @player.hit(ace)
+          @player.hit(ace)
+          @player.hit(double(val.to_s, name: :non_ace, value: val))
+
+          expect(
+            @player.possible_hands
+          ).to contain_exactly((4 + val), (14 + val),
+                               (24 + val), (34 + val),
+                               (44 + val))
+        end
       end
     end
   end
 
-  describe '#blackjack?' do
+  describe '#blackjack? (alias: #twenty_one?)' do
     it 'identifies all blackjacks' do
       blackjacks = [
         [ace, ten],
@@ -153,149 +172,38 @@ RSpec.describe Player do
       end
     end
 
-    it 'identifies a non-blackjack' do
-      @player.deal(ace)
-      @player.deal(nine)
-      expect(@player).to_not be_blackjack
+    it 'identifies a hand with an ace that is not blackjack' do
+      two_through_nine = [
+        two,
+        three,
+        four,
+        five,
+        six,
+        seven,
+        eight,
+        nine
+      ]
+      two_through_nine.each do |other_card|
+        @player.cards.clear
+        @player.deal(ace)
+        @player.deal(other_card)
+        expect(@player).to_not be_blackjack
+      end
     end
   end
 
-  describe '#twenty_one?' do
-    context 'without an ace' do
-      it 'identifies a three-card twenty-one' do
-        @player.deal(ten)
-        @player.deal(six)
-        @player.hit(five)
-        expect(@player).to be_twenty_one
-      end
-
-      it 'identifies a four-card twenty-one' do
-        @player.deal(ten)
-        @player.deal(six)
-        @player.hit(three)
-        @player.hit(two)
-        expect(@player).to be_twenty_one
-      end
-
-      it 'identifies a five-card twenty-one' do
-        @player.deal(seven)
-        @player.deal(six)
-        @player.hit(four)
-        @player.hit(two)
-        @player.hit(two)
-        expect(@player).to be_twenty_one
+  describe '#bust?' do
+    it 'a player with at least one hand under 21 is not bust' do
+      (22..30).each do |val|
+        allow(@player).to receive(:possible_hands).and_return([val, 21])
+        expect(@player).to_not be_bust
       end
     end
 
-    context 'with an ace-low' do
-      it 'and two tens makes twenty-one' do
-        @player.deal(ten)
-        @player.deal(ten)
-        @player.hit(ace)
-        expect(@player).to be_twenty_one
-      end
-
-      it 'and ten and two other cards makes twenty-one' do
-        makes_ten = [
-          [two, eight],
-          [three, seven],
-          [four, six],
-          [five, five]
-        ]
-        makes_ten.each do |a, b|
-          @player.cards.clear
-          @player.deal(ten)
-          @player.deal(a)
-          @player.hit(b)
-          @player.hit(ace)
-          expect(@player).to be_twenty_one
-        end
-      end
-
-      it 'and ten and three other cards makes twenty-one' do
-        makes_ten = [
-          [two, three, five],
-          [two, four, four],
-          [three, three, four]
-        ]
-        makes_ten.each do |a, b, c|
-          @player.cards.clear
-          @player.deal(ten)
-          @player.deal(a)
-          @player.hit(b)
-          @player.hit(c)
-          @player.hit(ace)
-          expect(@player).to be_twenty_one
-        end
-      end
-    end
-
-    context 'with an ace-high' do
-      it 'and two cards makes twenty-one' do
-        makes_ten = [
-          [two, eight],
-          [three, seven],
-          [four, six],
-          [five, five]
-        ]
-        makes_ten.each do |a, b|
-          @player.cards.clear
-          @player.deal(a)
-          @player.deal(b)
-          @player.hit(ace)
-          expect(@player).to be_twenty_one
-        end
-      end
-
-      it 'and three cards makes twenty-one' do
-        makes_ten = [
-          [two, three, five],
-          [two, four, four],
-          [three, three, four]
-        ]
-        makes_ten.each do |a, b, c|
-          @player.cards.clear
-          @player.deal(a)
-          @player.deal(b)
-          @player.hit(c)
-          @player.hit(ace)
-          expect(@player).to be_twenty_one
-        end
-      end
-    end
-
-    context 'two aces' do
-      it 'and two cards makes twenty-one' do
-        makes_nine = [
-          [two, seven],
-          [three, six],
-          [four, five]
-        ]
-        makes_nine.each do |a, b|
-          @player.cards.clear
-          @player.deal(ace)
-          @player.deal(ace)
-          @player.hit(a)
-          @player.hit(b)
-          expect(@player).to be_twenty_one
-        end
-      end
-
-      it 'and three cards makes twenty-one' do
-        makes_nine = [
-          [two, two, five],
-          [two, three, four],
-          [three, three, three]
-        ]
-        makes_nine.each do |a, b, c|
-          @player.cards.clear
-          @player.deal(ace)
-          @player.deal(ace)
-          @player.hit(a)
-          @player.hit(b)
-          @player.hit(c)
-          expect(@player).to be_twenty_one
-        end
+    it 'a player whose hands are all over 21 is bust' do
+      (22..30).each do |val|
+        allow(@player).to receive(:possible_hands).and_return([val])
+        expect(@player).to be_bust
       end
     end
   end

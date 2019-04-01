@@ -31,7 +31,7 @@ class Deck
     jack:  10,
     queen: 10,
     king:  10,
-    ace:   [11, 1]
+    ace:   [1, 11]
   }.freeze
 
   def initialize
@@ -74,22 +74,34 @@ class Player
   end
   alias twenty_one? blackjack?
 
+  def bust?
+    possible_hands.all? { |hand| hand > 21 }
+  end
+
   def possible_hands
     aces, non_aces = @cards.partition { |card| card.name == :ace }
-    hand_without_aces = non_aces.sum(&:value)
-
-    if aces.count
-      hands_with_aces(aces.count, hand_without_aces)
+    if has_ace?
+      hands_with_aces(aces, non_aces)
     else
-      [hand_without_aces]
+      [hand_without_aces(non_aces)]
     end
   end
 
-  def hands_with_aces(num_aces, hand_without_aces)
+  private
+
+  def hand_without_aces(non_aces)
+    non_aces.sum(&:value)
+  end
+
+  def hands_with_aces(aces, non_aces)
     hands = []
-    (0..num_aces).each do |i|
-      hands.unshift(hand_without_aces + num_aces + (i * 10))
+    (0..aces.count).each do |i|
+      hands << hand_without_aces(non_aces) + aces.count + (i * 10)
     end
     hands
+  end
+
+  def has_ace?
+    @cards.any? { |card| card.name == :ace }
   end
 end
