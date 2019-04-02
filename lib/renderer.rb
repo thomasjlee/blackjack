@@ -60,7 +60,7 @@ class Renderer
       if index == 1 && !show_dealers_hand
         puts '| ???'
       else
-        puts "| #{SUIT_CHARS[card.suit]} #{CARD_NAMES[card.name]}"
+        puts "| #{SUIT_CHARS[card.suit]} #{format('%2s', CARD_NAMES[card.name])}"
       end
     end
 
@@ -69,7 +69,7 @@ class Renderer
     puts '|'
 
     player.cards.each do |card|
-      puts "| #{SUIT_CHARS[card.suit]} #{CARD_NAMES[card.name]}"
+      puts "| #{SUIT_CHARS[card.suit]} #{format('%2s', CARD_NAMES[card.name])}"
     end
 
     puts '|'
