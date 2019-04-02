@@ -7,10 +7,19 @@ RSpec.describe Game do
   end
 
   describe '#deal' do
-    it 'deals two cards to the player and the dealer' do
+    it 'deals two cards to the player' do
       @game.deal
       expect(@game.player.cards.count).to be 2
+    end
+
+    it 'deals two cards to the dealer' do
+      @game.deal
       expect(@game.dealer.cards.count).to be 2
+    end
+
+    it 'removes four cards from the deck' do
+      @game.deal
+      expect(@game.deck.cards.count).to be 48
     end
   end
 
@@ -103,21 +112,20 @@ RSpec.describe Game do
   end
 
   describe '#player_sequence' do
-    it 'returns :bust if player busts' do
+    it 'returns :bust if player hits then busts' do
+      allow(@game).to receive(:hit_or_stay).and_return('hit')
       allow(@game.player).to receive(:bust?).and_return(true)
-      allow(@game).to receive(:gets).and_return('hit')
       expect(@game.player_sequence).to be :bust
     end
 
     it 'returns nil if player stays' do
-      allow(@game.player).to receive(:bust?).and_return(false)
-      allow(@game).to receive(:gets).and_return('stay')
+      allow(@game).to receive(:hit_or_stay).and_return('stay')
       expect(@game.player_sequence).to be nil
     end
   end
 
   describe '#dealer_sequence' do
-    it 'returns :dealer_bust if dealer busts' do
+    it 'returns :dealer_bust if dealer hits then busts' do
       allow(@game.dealer).to receive(:must_stay?).and_return(false)
       allow(@game.dealer).to receive(:bust?).and_return(true)
       expect(@game.dealer_sequence).to be :dealer_bust
@@ -130,7 +138,7 @@ RSpec.describe Game do
   end
 
   describe '#final_sequence' do
-    it 'returns :lose if player lost' do
+    it 'returns :lose if player loses' do
       allow(@game.player).to receive(:final_hand).and_return(20)
       allow(@game.dealer).to receive(:final_hand).and_return(21)
       expect(@game.final_sequence).to be :lose
