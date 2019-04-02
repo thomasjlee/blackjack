@@ -1,5 +1,6 @@
 require 'spec_helper'
-require_relative '../blackjack'
+require_relative '../lib/player'
+require_relative '../lib/card'
 
 RSpec.describe Player do
   let(:ace)   { Card.new(:hearts, :ace, [11, 1]) }

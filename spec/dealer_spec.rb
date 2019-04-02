@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative '../blackjack'
+require_relative '../lib/dealer'
 
 RSpec.describe Dealer do
   before :each do

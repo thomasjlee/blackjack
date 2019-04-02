@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative '../blackjack'
+require_relative '../lib/deck'
 
 RSpec.describe Deck do
   before do
