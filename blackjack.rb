@@ -1,21 +1,23 @@
-require 'pp'
 require_relative 'lib/card'
 require_relative 'lib/deck'
 require_relative 'lib/player'
 require_relative 'lib/dealer'
+require_relative 'lib/renderer'
 
 class Game
-  attr_reader :deck, :dealer, :player
+  attr_reader :deck, :dealer, :player, :render
 
-  def initialize
+  def initialize(renderer: Renderer.new)
     @deck   = Deck.new
     @dealer = Dealer.new
     @player = Player.new
+    @render = renderer
+    @render.context = { player: @player, dealer: @dealer }
   end
 
   def play_round
     deal
-    render_table
+    render.table
 
     result =
       blackjack_sequence ||
@@ -23,8 +25,9 @@ class Game
       dealer_sequence ||
       final_sequence
 
-    render_table(show_dealers_hand: true)
-    render_round_ended(result)
+    render.table(show_dealers_hand: true)
+    render.final_hands
+    render.end_of_round(result)
   end
 
   def blackjack_sequence
@@ -41,7 +44,7 @@ class Game
     until action == 'stay'
       action = hit_or_stay
       player.hit(deck.draw!) if action == 'hit'
-      render_table
+      render.table
       return :bust if player.bust?
     end
   end
@@ -71,12 +74,12 @@ class Game
   end
 
   def hit_or_stay
-    print 'Hit (h) / Stay (s): '
+    render.hit_or_stay
     input = gets.chomp.strip.downcase
     if valid_hit_or_stay?(input)
       normalize_hit_or_stay(input)
     else
-      puts 'You may hit or stay. Try again.'
+      render.invalid_hit_or_stay
       hit_or_stay
     end
   end
@@ -91,38 +94,6 @@ class Game
       'hit'
     when /^s/
       'stay'
-    end
-  end
-
-  def render_table(show_dealers_hand: false)
-    puts "DEALER'S CARDS"
-    if show_dealers_hand
-      pp dealer.cards
-    else
-      pp dealer.cards[0]
-      puts '[ x ]'
-    end
-
-    puts "\nYOUR CARDS"
-    pp player.cards
-  end
-
-  def render_round_ended(result)
-    case result
-    when :blackjacks
-      puts ">> BLACKJACKS! PUSH!\n\n"
-    when :blackjack
-      puts ">> BLACKJACK! YOU WIN!\n\n"
-    when :bust
-      puts ">> BUST! YOU LOSE!\n\n"
-    when :dealer_bust
-      puts ">> DEALER BUSTED! YOU WIN!\n\n"
-    when :win
-      puts ">> YOU WIN!\n\n"
-    when :lose
-      puts ">> YOU LOSE!\n\n"
-    when :push
-      puts ">> PUSH!\n\n"
     end
   end
 end
