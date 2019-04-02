@@ -118,12 +118,13 @@ RSpec.describe Game do
 
   describe '#dealer_sequence' do
     it 'returns :dealer_bust if dealer busts' do
+      allow(@game.dealer).to receive(:must_stay?).and_return(false)
       allow(@game.dealer).to receive(:bust?).and_return(true)
       expect(@game.dealer_sequence).to be :dealer_bust
     end
 
-    it 'returns nil if dealer does not bust' do
-      allow(@game.dealer).to receive(:bust?).and_return(false)
+    it 'returns nil if dealer must stay' do
+      allow(@game.dealer).to receive(:must_stay?).and_return(true)
       expect(@game.dealer_sequence).to be nil
     end
   end
