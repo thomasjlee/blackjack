@@ -11,7 +11,9 @@ RSpec.describe Dealer do
       it 'dealer must stay with a hand of 17 through 21' do
         allow(@dealer).to receive(:ace?).and_return(true)
         (6..10).each do |non_ace_value|
-          allow(@dealer).to receive(:possible_hands).and_return([non_ace_value + 1, non_ace_value + 11])
+          low  = non_ace_value + 1
+          high = non_ace_value + 11
+          allow(@dealer).to receive(:possible_hands).and_return([low, high])
           expect(@dealer.must_stay?).to be true
         end
       end
@@ -19,7 +21,9 @@ RSpec.describe Dealer do
       it 'dealer must hit with a hand less than 17' do
         allow(@dealer).to receive(:ace?).and_return(true)
         (2..5).each do |non_ace_value|
-          allow(@dealer).to receive(:possible_hands).and_return([non_ace_value + 1, non_ace_value + 11])
+          low  = non_ace_value + 1
+          high = non_ace_value + 11
+          allow(@dealer).to receive(:possible_hands).and_return([low, high])
           expect(@dealer.must_stay?).to be false
         end
       end

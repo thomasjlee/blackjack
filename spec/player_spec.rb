@@ -213,7 +213,7 @@ RSpec.describe Player do
     context 'when the player has busted' do
       it 'gives the lowest hand value' do
         (22..30).each do |val|
-          allow(@player).to receive(:possible_hands).and_return([val, val + 2, val + 4])
+          allow(@player).to receive(:possible_hands).and_return([val, val + 2])
           expect(@player.final_hand).to be val
         end
       end

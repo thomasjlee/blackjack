@@ -14,94 +14,120 @@ class Game
   end
 
   def play_round
-    # deal card to player, then dealer (2 cards each)
+    deal
+    render_table
+
+    result =
+      blackjack_sequence ||
+      player_sequence ||
+      dealer_sequence ||
+      final_sequence
+
+    render_table(show_dealers_hand: true)
+    render_round_ended(result)
+  end
+
+  def blackjack_sequence
+    return unless player.blackjack?
+    if dealer.blackjack?
+      :blackjacks
+    else
+      :blackjack
+    end
+  end
+
+  def player_sequence
+    action = ''
+    until action == 'stay'
+      action = hit_or_stay
+      player.hit(deck.draw!) if action == 'hit'
+      render_table
+      return :bust if player.bust?
+    end
+  end
+
+  def dealer_sequence
+    until dealer.must_stay?
+      dealer.hit(deck.draw!)
+      return :dealer_bust if dealer.bust?
+    end
+  end
+
+  def final_sequence
+    if dealer.final_hand > player.final_hand
+      :lose
+    elsif dealer.final_hand < player.final_hand
+      :win
+    else
+      :push
+    end
+  end
+
+  def deal
     2.times do
       player.deal(deck.draw!)
       dealer.deal(deck.draw!)
     end
+  end
 
+  def hit_or_stay
+    print 'Hit (h) / Stay (s): '
+    input = gets.chomp.strip.downcase
+    if valid_hit_or_stay?(input)
+      normalize_hit_or_stay(input)
+    else
+      puts 'You may hit or stay. Try again.'
+      hit_or_stay
+    end
+  end
+
+  def valid_hit_or_stay?(input)
+    %w(hit h stay stand s).include?(input)
+  end
+
+  def normalize_hit_or_stay(input)
+    case input
+    when /^h/
+      'hit'
+    when /^s/
+      'stay'
+    end
+  end
+
+  def render_table(show_dealers_hand: false)
     puts "DEALER'S CARDS"
-    # dealer's second dealt card is face-down
-    pp dealer.cards[0]
-    puts '[ x ]'
+    if show_dealers_hand
+      pp dealer.cards
+    else
+      pp dealer.cards[0]
+      puts '[ x ]'
+    end
 
     puts "\nYOUR CARDS"
     pp player.cards
+  end
 
-    # if player has blackjack, it's the end of the round
-    # if dealer also has blackjack
-    #   it's a push
-    # otherwise
-    #   player has won
-
-    if player.blackjack?
-      if dealer.blackjack?
-        puts "PUSH!"
-      else
-        puts "YOU WIN!"
-      end
-    end
-
-    # if player does not have blackjack, we ask: hit or stay?
-    if !player.blackjack?
-      hit_or_stay = ''
-      until hit_or_stay == 'stay' || player.bust? || player.twenty_one?
-        puts 'hit or stay?'
-        hit_or_stay = gets.chomp.downcase
-        if hit_or_stay == 'hit'
-          player.deal(deck.draw!)
-
-          # render the hands
-          puts "DEALER'S CARDS"
-          pp dealer.cards[0]
-          puts '[ x ]'
-
-          puts "\nYOUR CARDS"
-          pp player.cards
-        end
-      end
-
-      if player.bust?
-        puts "BUST! YOU LOSE!"
-        return
-      end
-
-      # then it's the dealer's sequence
-      # dealer hits until bust or greater than (or equal to) 17
-
-      until dealer.must_stay? || dealer.bust?
-        puts "... dealer hits ..."
-        dealer.hit(deck.draw!)
-        # now, the dealer's hand is revealed
-        # render the hands
-        puts "DEALER'S CARDS"
-        pp dealer.cards
-
-        puts "\nYOUR CARDS"
-        pp player.cards
-      end
-
-      if dealer.bust?
-        puts "DEALER BUST! YOU WIN!"
-      end
-    end
-
-    # if neither has busted and the player has not blackjacked
-    # (this will be better captured in a loop)
-    # then, finally, compare the hands to see who wins
-    if !player.blackjack? && !player.bust? && !dealer.bust?
-      if dealer.final_hand > player.final_hand
-        puts "DEALER WINS!"
-      elsif player.final_hand > dealer.final_hand
-        puts "YOU WIN!"
-      else
-        puts "PUSH!"
-      end
+  def render_round_ended(result)
+    case result
+    when :blackjacks
+      puts ">> BLACKJACKS! PUSH!\n\n"
+    when :blackjack
+      puts ">> BLACKJACK! YOU WIN!\n\n"
+    when :bust
+      puts ">> BUST! YOU LOSE!\n\n"
+    when :dealer_bust
+      puts ">> DEALER BUSTED! YOU WIN!\n\n"
+    when :win
+      puts ">> YOU WIN!\n\n"
+    when :lose
+      puts ">> YOU LOSE!\n\n"
+    when :push
+      puts ">> PUSH!\n\n"
     end
   end
 end
 
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   game = Game.new
   game.play_round
 end
