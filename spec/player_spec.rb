@@ -207,4 +207,27 @@ RSpec.describe Player do
       end
     end
   end
+
+  describe '#final_hand' do
+    context 'when the player has busted' do
+      it 'gives the lowest hand value' do
+        (22..30).each do |val|
+          allow(@player).to receive(:possible_hands).and_return([val, val + 2, val + 4])
+          expect(@player.final_hand).to be val
+        end
+      end
+    end
+
+    context 'when the player has stayed' do
+      it 'returns 21 if the player has a twenty-one hand' do
+        allow(@player).to receive(:possible_hands).and_return([19, 20, 21, 22])
+        expect(@player.final_hand).to be 21
+      end
+
+      it 'returns the highest hand value less than or equal to 21' do
+        allow(@player).to receive(:possible_hands).and_return([19, 20, 22])
+        expect(@player.final_hand).to be 20
+      end
+    end
+  end
 end
